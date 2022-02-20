@@ -13,8 +13,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class ImportFile extends JFrame implements ActionListener
 {
    private JFileChooser jfc = new JFileChooser();
-   private JButton jbt_open = new JButton("열기");
-   private JButton jbt_save = new JButton("저장");
+   private JButton jbt_open = new JButton("Open");
+   private JButton jbt_save = new JButton("Save");
    private JLabel jlb = new JLabel(" "); 
           
    public ImportFile()
