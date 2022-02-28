@@ -1,8 +1,8 @@
+import engine.STL;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 import org.lwjgl.system.*;
-import util.STL;
 
 import java.nio.*;
 
