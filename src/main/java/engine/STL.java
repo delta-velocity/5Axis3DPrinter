@@ -46,7 +46,7 @@ public class STL {
 			String command;
 			solids = new ArrayList<>();
 
-			int index = 0;
+			int index = 1;
 			float minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0;
 			ArrayList<Float> pos = new ArrayList<>();
 			ArrayList<Float> col = new ArrayList<>();
@@ -58,7 +58,7 @@ public class STL {
 					solids.add(new Solid());
 					//System.out.println("Solid " + solids.size());
 				} else if (s[0].equals("facet")) {
-					normal = new Vector3f(-Float.parseFloat(s[2]), -Float.parseFloat(s[3]), -Float.parseFloat(s[4]));
+					normal = new Vector3f(Float.parseFloat(s[2]), -Float.parseFloat(s[3]), -Float.parseFloat(s[4]));
 					r.readLine();
 					s = r.readLine().split("\\s+");
 					p1 = new Vector3f(Float.parseFloat(s[2]), Float.parseFloat(s[3]), Float.parseFloat(s[4]));
@@ -66,19 +66,22 @@ public class STL {
 					p2 = new Vector3f(Float.parseFloat(s[2]), Float.parseFloat(s[3]), Float.parseFloat(s[4]));
 					s = r.readLine().split("\\s+");
 					p3 = new Vector3f(Float.parseFloat(s[2]), Float.parseFloat(s[3]), Float.parseFloat(s[4]));
-					STL.Face f = new STL.Face(p1, p2, p3, normal);
+					STL.Face f = new STL.Face(p3, p2, p1, normal);
 					solids.get(solids.size() - 1).addFace(f);
 
 					pos.add(p1.x); pos.add(p1.y); pos.add(p1.z);
 					pos.add(p2.x); pos.add(p2.y); pos.add(p2.z);
 					pos.add(p3.x); pos.add(p3.y); pos.add(p3.z);
 
-					float shade = 1 - normal.angleCos(LIGHTING_ANGLE);
+					float shade = (float) Math.max(1 - normal.angleCos(LIGHTING_ANGLE), 0.1);
 
 					col.add(shade); col.add(shade); col.add(shade);
 					col.add(shade); col.add(shade); col.add(shade);
 					col.add(shade); col.add(shade); col.add(shade);
-					ind.add(index++); ind.add(index++); ind.add(index++);
+
+					ind.add(index - 1); ind.add(index); ind.add(index + 1);
+
+					index = index + 3;
 				}
 			}
 			r.close();

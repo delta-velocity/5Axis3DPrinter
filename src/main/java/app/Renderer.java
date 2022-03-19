@@ -37,6 +37,9 @@ public class Renderer {
 
 	public void init(Window window) throws Exception {
 		this.window = window;
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		glEnable(GL_DEPTH_TEST);
 		shader = new ShaderProgram();
 		shader.createVertexShader();
 		shader.createFragmentShader();

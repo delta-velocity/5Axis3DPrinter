@@ -69,7 +69,7 @@ public class DummyGame implements ApplicationInterface {
 		window.setClearColor(color, color, color, 0.0f);
 		renderer.clear();
 		Vector3f v = mesh2.getRotation();
-		v.z = v.z + 0.5f;
+		v.x = v.x + 0.5f;
 		mesh2.setRotation(v.x, v.y, v.z);
 
 		renderer.render(window, new STL[]{mesh2});
