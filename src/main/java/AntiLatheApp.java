@@ -1,168 +1,131 @@
-import static org.lwjgl.glfw.GLFW.GLFW_FALSE;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE;
-import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
-import static org.lwjgl.glfw.GLFW.GLFW_RESIZABLE;
-import static org.lwjgl.glfw.GLFW.GLFW_TRUE;
-import static org.lwjgl.glfw.GLFW.GLFW_VISIBLE;
-import static org.lwjgl.glfw.GLFW.glfwCreateWindow;
-import static org.lwjgl.glfw.GLFW.glfwDefaultWindowHints;
-import static org.lwjgl.glfw.GLFW.glfwDestroyWindow;
-import static org.lwjgl.glfw.GLFW.glfwGetPrimaryMonitor;
-import static org.lwjgl.glfw.GLFW.glfwGetVideoMode;
-import static org.lwjgl.glfw.GLFW.glfwInit;
-import static org.lwjgl.glfw.GLFW.glfwMakeContextCurrent;
-import static org.lwjgl.glfw.GLFW.glfwPollEvents;
-import static org.lwjgl.glfw.GLFW.glfwSetErrorCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetKeyCallback;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowPos;
-import static org.lwjgl.glfw.GLFW.glfwSetWindowShouldClose;
-import static org.lwjgl.glfw.GLFW.glfwShowWindow;
-import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
-import static org.lwjgl.glfw.GLFW.glfwSwapInterval;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
-import static org.lwjgl.glfw.GLFW.glfwWindowHint;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_EXTENSIONS;
-import static org.lwjgl.opengl.GL11.GL_MAX_TEXTURE_SIZE;
-import static org.lwjgl.opengl.GL11.GL_QUADS;
-import static org.lwjgl.opengl.GL11.GL_RENDERER;
-import static org.lwjgl.opengl.GL11.GL_VENDOR;
-import static org.lwjgl.opengl.GL11.GL_VERSION;
-import static org.lwjgl.opengl.GL11.glBegin;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glClearColor;
-import static org.lwjgl.opengl.GL11.glColor3f;
-import static org.lwjgl.opengl.GL11.glEnd;
-import static org.lwjgl.opengl.GL11.glGetInteger;
-import static org.lwjgl.opengl.GL11.glGetString;
-import static org.lwjgl.opengl.GL11.glVertex3f;
-import static org.lwjgl.system.MemoryUtil.NULL;
+import engine.STL;
+import org.lwjgl.*;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.*;
+import org.lwjgl.system.*;
 
-import org.lwjgl.Version;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.opengl.GL;
+import java.nio.*;
+
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 public class AntiLatheApp {
-	private GLFWErrorCallback errorCallback;
-	private GLFWKeyCallback keyCallback;
 
+	// The window handle
 	private long window;
 
-	private float sp = 0.0f;
-	private boolean swapcolor = false;
+	private int defaultWidth = 1440;
+	private int defaultHeight = 720;
+	private boolean toggle = false;
+
+	private static STL stl;
+
+	public static void main(String[] args) throws Exception {
+		stl = new STL("C:\\Users\\Delta\\Documents\\5Axis3DPrinter\\GoPro_-_Gerade.stl");
+		AntiLatheApp app = new AntiLatheApp();
+		app.run();
+	}
+	public void run() {
+		System.out.println("Hello LWJGL " + Version.getVersion() + "!");
+
+		init();
+		loop();
+
+		// Free the window callbacks and destroy the window
+		glfwFreeCallbacks(window);
+		glfwDestroyWindow(window);
+
+		// Terminate GLFW and free the error callback
+		glfwTerminate();
+		glfwSetErrorCallback(null).free();
+	}
 
 	private void init() {
-		glfwSetErrorCallback(errorCallback = GLFWErrorCallback.createPrint(System.err));
+		// Setup an error callback. The default implementation
+		// will print the error message in System.err.
+		GLFWErrorCallback.createPrint(System.err).set();
 
-		if (!glfwInit())
+		// Initialize GLFW. Most GLFW functions will not work before doing this.
+		if ( !glfwInit() )
 			throw new IllegalStateException("Unable to initialize GLFW");
 
-		glfwDefaultWindowHints();
-		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+		// Configure GLFW
+		glfwDefaultWindowHints(); // optional, the current window hints are already the default
+		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
+		glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
 
-		int WIDTH = 300;
-		int HEIGHT = 300;
-
-		window = glfwCreateWindow(WIDTH, HEIGHT, "Hello LWJGL3", NULL, NULL);
-		if (window == NULL)
+		// Create the window
+		window = glfwCreateWindow(300, 300, "Hello World!", NULL, NULL);
+		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 
-		glfwSetKeyCallback(window, keyCallback = new GLFWKeyCallback() {
-			@Override
-			public void invoke(long window, int key, int scancode, int action, int mods) {
-				if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE)
-					glfwSetWindowShouldClose(window, true);
-			}
+		// Setup a key callback. It will be called every time a key is pressed, repeated or released.
+		glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+			if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
+				glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
 		});
 
-		GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
-		glfwSetWindowPos(window, (vidmode.width() - WIDTH) / 2, (vidmode.height() - HEIGHT) / 2);
+		// Get the thread stack and push a new frame
+		try ( MemoryStack stack = stackPush() ) {
+			IntBuffer pWidth = stack.mallocInt(1); // int*
+			IntBuffer pHeight = stack.mallocInt(1); // int*
 
+			// Get the window size passed to glfwCreateWindow
+			glfwGetWindowSize(window, pWidth, pHeight);
+
+			// Get the resolution of the primary monitor
+			GLFWVidMode vidmode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+
+			// Center the window
+			glfwSetWindowPos(
+					window,
+					(vidmode.width() - pWidth.get(0)) / 2,
+					(vidmode.height() - pHeight.get(0)) / 2
+			);
+		} // the stack frame is popped automatically
+
+		// Make the OpenGL context current
 		glfwMakeContextCurrent(window);
+		// Enable v-sync
 		glfwSwapInterval(1);
 
+		// Make the window visible
 		glfwShowWindow(window);
 	}
 
-	private void update() {
-		sp = sp + 0.001f;
-		if (sp > 1.0f) {
-			sp = 0.0f;
-			swapcolor = !swapcolor;
-		}
-	}
-
-	private void render() {
-		drawQuad();
-	}
-
-	private void drawQuad() {
-		if (!swapcolor) {
-			glColor3f(0.0f, 1.0f, 0.0f);
-		} else {
-			glColor3f(0.0f, 0.0f, 1.0f);
-		}
-
-		glBegin(GL_QUADS);
-		{
-
-			glVertex3f(-sp, -sp, 0.0f);
-			glVertex3f(sp, -sp, 0.0f);
-			glVertex3f(sp, sp, 0.0f);
-			glVertex3f(-sp, sp, 0.0f);
-		}
-		glEnd();
-
-	}
-
 	private void loop() {
+		// This line is critical for LWJGL's interoperation with GLFW's
+		// OpenGL context, or any context that is managed externally.
+		// LWJGL detects the context that is current in the current thread,
+		// creates the GLCapabilities instance and makes the OpenGL
+		// bindings available for use.
 		GL.createCapabilities();
-		System.out.println("----------------------------");
-		System.out.println("OpenGL Version : " + glGetString(GL_VERSION));
-		System.out.println("OpenGL Max Texture Size : " + glGetInteger(GL_MAX_TEXTURE_SIZE));
-		System.out.println("OpenGL Vendor : " + glGetString(GL_VENDOR));
-		System.out.println("OpenGL Renderer : " + glGetString(GL_RENDERER));
-		System.out.println("OpenGL Extensions supported by your card : ");
-		String extensions = glGetString(GL_EXTENSIONS);
-		String[] extArr = extensions.split("\\ ");
-		for (int i = 0; i < extArr.length; i++) {
-			System.out.println(extArr[i]);
-		}
-		System.out.println("----------------------------");
 
-		while (!glfwWindowShouldClose(window)) {
-			if (!swapcolor) {
-				glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-			} else {
-				glClearColor(0.0f, 1.0f, 0.0f, 0.0f);
-			}
+		// Set the clear color
+		glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			update();
-			render();
-			glfwSwapBuffers(window);
+		// Run the rendering loop until the user has attempted to close
+		// the window or has pressed the ESCAPE key.
+		while ( !glfwWindowShouldClose(window) ) {
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
+			glfwSwapBuffers(window); // swap the color buffers
+
+			// Poll for window events. The key callback above will only be
+			// invoked during this call.
 			glfwPollEvents();
 		}
 	}
-	public void run() {
-		System.out.println("Hello LWJGL3 " + Version.getVersion() + "!");
 
-		try {
-			init();
-			loop();
-			glfwDestroyWindow(window);
-		} finally {
-			glfwTerminate();
-		}
-	}
 
-	public static void main(String[] args) {
-		new AntiLatheApp().run();
-	}
+
+
+
+
+
+
+
 }

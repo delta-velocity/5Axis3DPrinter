@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.github.orange451:LWJGUI:pre-mt">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/orange451/LWJGUI/pre-mt/LWJGUI-pre-mt.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/orange451/LWJGUI/pre-mt/LWJGUI-pre-mt-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/github/orange451/LWJGUI/pre-mt/LWJGUI-pre-mt-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
