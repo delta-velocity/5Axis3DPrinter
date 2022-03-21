@@ -1,8 +1,13 @@
 import javax.swing.event.*;
 import javax.swing.*;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
+import javax.swing.filechooser.*;
+import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.nio.file.*;
+import java.util.Scanner;
+import java.util.Vector;
+import java.util.HashMap;
 
 public class Base_UI {
    public static void main(String[] args) throws Exception {
@@ -17,72 +22,169 @@ public class Base_UI {
       JPanel parms_panel = new JPanel(); // main panel for parameter selections
       parms_panel.setLayout(new GridLayout(0, 1));
       
-      //file import panel goes here
+      JPanel model_panel = new JPanel();
+      JButton model_button = new JButton("Choose Model");
+      JLabel model_label = new JLabel("None");
       
-      JPanel n_temp_panel = new JPanel();
-      JLabel n_t_label = new JLabel("Nozzle Temperature");
-      JTextField n_t_tf = new JTextField(20);
+      model_panel.add(model_button);
+      model_panel.add(model_label);
       
-      JPanel s_temp_panel = new JPanel();
-      JLabel s_t_label = new JLabel("Print Surface Temperature");
-      JTextField s_t_tf = new JTextField(20);
+      //get different files in one run
+      class FileHolder {
+         private File the_file;
+         public File getFile() {
+            return the_file;
+         }
+         public void setFile(File given_file) {
+            the_file = given_file;
+         }
+      }
       
-      JPanel p_speed_panel = new JPanel();
-      JLabel p_s_label = new JLabel("Print Speed");
-      JTextField p_s_tf = new JTextField(20);
+      FileHolder chosen_model = new FileHolder();
       
-      JPanel i_pattern_panel = new JPanel();
-      JLabel i_p_label = new JLabel("Infill Pattern");
-      String[] i_p_options = {"Cross Lattice", "Square Lattice"};
-      JComboBox<String> i_p_cb = new JComboBox<String>(i_p_options);
+      model_button.addActionListener(
+            new ActionListener() {
+               @Override
+               public void actionPerformed(ActionEvent e) {
+                  JFileChooser jfc = new JFileChooser();
+                  jfc.setFileFilter(new FileNameExtensionFilter("txt", "txt"));
+                  jfc.setMultiSelectionEnabled(false);
+               
+                  int choice = jfc.showOpenDialog(null);
+               
+                  if (choice == JFileChooser.APPROVE_OPTION) {
+                     chosen_model.setFile(jfc.getSelectedFile());
+                     model_label.setText(chosen_model.getFile().toString());
+                  }
+               }
+            });
+            
+      Path parm_path = Path.of("parameters.txt");
+      String parm_string = Files.readString(parm_path);
       
-      JPanel i_density_panel = new JPanel();
-      JLabel i_d_label = new JLabel("Infill Density");
-      JTextField i_d_tf = new JTextField(20);
+      Vector<JPanel> panels = new Vector<JPanel>();
+      HashMap<String, double[]> constraints = new HashMap<String, double[]>();
+      HashMap<String, Vector<String>> drop_lists = new HashMap<String, Vector<String>>();
+      
+      //read parameters from file
+      Scanner parm_scan = new Scanner(parm_string);
+      while (parm_scan.hasNextLine()) {
+         JPanel new_panel = new JPanel();
+         
+         String label_text = parm_scan.nextLine();
+         JLabel new_label = new JLabel(label_text);
+         new_panel.add(new_label);
+         
+         String type_text = parm_scan.nextLine();
+         
+         if (type_text.equalsIgnoreCase("Text")) {
+            JTextField new_tf = new JTextField(20);
+            new_panel.add(new_tf);
+            
+            double[] bounds = new double[2];
+            String lower = parm_scan.nextLine();
+            bounds[0] = Double.parseDouble(lower);
+            String upper = parm_scan.nextLine();
+            bounds[1] = Double.parseDouble(upper);
+            
+            constraints.put(label_text, bounds);
+         }
+         else if (type_text.equalsIgnoreCase("List")) {
+            Vector<String> options = new Vector<String>();
+            do {
+               String list_item = parm_scan.nextLine();
+               if (list_item.equals("#")) {
+                  break;
+               }
+            //else
+               options.add(list_item);
+            }
+            while (parm_scan.hasNextLine());
+            
+            JComboBox<String> new_cb = new JComboBox<String>(options);
+            new_panel.add(new_cb);
+            
+            drop_lists.put(label_text, options);
+         }
+         
+         panels.add(new_panel);
+      }
+      parm_scan.close();
       
       JButton submit = new JButton("Ready Print");
       
-      // Handling Button Click Event
+      // Handling Button Click Event for submission
       submit.addActionListener(
             new ActionListener() {
                @Override
                public void actionPerformed(ActionEvent e) {
-                  String theText = "Selected Parameters:"
-                     + "\n" + n_t_label.getText() + ": " + n_t_tf.getText()
-                     + "\n" + p_s_label.getText() + ": " + p_s_tf.getText()
-                     + "\n" + i_p_label.getText() + ": " + i_p_options[i_p_cb.getSelectedIndex()]
-                     + "\n" + i_d_label.getText() + ": " + i_d_tf.getText();
+                  String theText = "Selected Parameters:\nModel: ";
+                  
+                  if (chosen_model.getFile() != null) {
+                     theText += chosen_model.getFile().getAbsolutePath();
+                  }
+                  else {
+                     theText += "None";
+                  }
+                  
+                  for (JPanel panel : panels) {
+                     theText += "\n";
+                     double[] bounds = null;
+                     
+                     Component[] comps = panel.getComponents();
+                     
+                     String label_text = "";
+                     String choice_text = "";
+                     
+                     for (int i = 0; i < comps.length; i++) {
+                        if (comps[i] instanceof JLabel) {
+                           JLabel the_label = (JLabel) comps[i];
+                           label_text = the_label.getText();
+                        }
+                     }
+                     
+                     for (int i = 0; i < comps.length; i++) {
+                        if (comps[i] instanceof JTextField) {
+                           JTextField the_tf = (JTextField) comps[i];
+                           choice_text = the_tf.getText();
+                           
+                           if (!choice_text.isEmpty()) {
+                              double entered_number = Double.parseDouble(choice_text);
+                              bounds = constraints.get(label_text);
+                              if (entered_number < bounds[0]) {
+                                 entered_number = bounds[0];
+                              }
+                              else if (entered_number > bounds[1]) {
+                                 entered_number = bounds[1];
+                              }
+                              the_tf.setText(Double.toString(entered_number));
+                              choice_text = the_tf.getText();
+                           }
+                        }
+                        else if (comps[i] instanceof JComboBox) {
+                           JComboBox the_cb = (JComboBox) comps[i];
+                           Vector<String> drop_options = drop_lists.get(label_text);
+                           choice_text = drop_options.get(the_cb.getSelectedIndex());
+                        }
+                     }
+                     
+                     theText += label_text;
+                     theText += ": ";
+                     theText += choice_text;
+                  }
+                  
                   out.setText(theText);
                }
             });
       
-      // Components Added using Flow Layout within each panel...
-      
-      //file import panel goes here
-      
-      n_temp_panel.add(n_t_label); 
-      n_temp_panel.add(n_t_tf);
-      
-      s_temp_panel.add(s_t_label); 
-      s_temp_panel.add(s_t_tf);
-      
-      p_speed_panel.add(p_s_label); 
-      p_speed_panel.add(p_s_tf);
-      
-      i_pattern_panel.add(i_p_label); 
-      i_pattern_panel.add(i_p_cb);
-      
-      i_density_panel.add(i_d_label); 
-      i_density_panel.add(i_d_tf);
-      
       //individual panels added to big parms panel as GridLayout
+      parms_panel.add(model_panel);
       
-      //file import panel goes here
-      parms_panel.add(n_temp_panel);
-      parms_panel.add(s_temp_panel);
-      parms_panel.add(p_speed_panel);
-      parms_panel.add(i_pattern_panel);
-      parms_panel.add(i_density_panel);
+      
+      for (JPanel panel : panels) {
+         parms_panel.add(panel);
+      }  
+      
       parms_panel.add(submit);
       
       //Adding Components to the frame in BorderLayout
