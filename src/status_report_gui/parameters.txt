@@ -1,13 +1,13 @@
 Nozzle Temperature
-Text
+Number
 0
 50
 Print Surface Temperature
-Text
+Number
 10
 60
 Print Speed
-Text
+Number
 1
 10
 Infill Pattern
@@ -16,6 +16,6 @@ Cross Lattice
 Square Lattice
 #
 Infill Density
-Text
+Number
 0
 100

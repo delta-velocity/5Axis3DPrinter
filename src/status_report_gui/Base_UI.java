@@ -76,7 +76,7 @@ public class Base_UI {
          
          String type_text = parm_scan.nextLine();
          
-         if (type_text.equalsIgnoreCase("Text")) {
+         if (type_text.equalsIgnoreCase("Number")) {
             JTextField new_tf = new JTextField(20);
             new_panel.add(new_tf);
             
