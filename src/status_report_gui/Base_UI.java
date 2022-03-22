@@ -64,7 +64,6 @@ public class Base_UI {
       
       Vector<JPanel> panels = new Vector<JPanel>();
       HashMap<String, double[]> constraints = new HashMap<String, double[]>();
-      HashMap<String, Vector<String>> drop_lists = new HashMap<String, Vector<String>>();
       
       //read parameters from file
       Scanner parm_scan = new Scanner(parm_string);
@@ -103,8 +102,6 @@ public class Base_UI {
             
             JComboBox<String> new_cb = new JComboBox<String>(options);
             new_panel.add(new_cb);
-            
-            drop_lists.put(label_text, options);
          }
          
          panels.add(new_panel);
@@ -127,50 +124,12 @@ public class Base_UI {
                      theText += "None";
                   }
                   
-                  for (JPanel panel : panels) {
-                     theText += "\n";
-                     double[] bounds = null;
+                  HashMap<String, String> inputs = getBoundedInputsFromPanelsAndConstraints(panels, constraints);
+                  
+                  for (String label_text : inputs.keySet()) {
+                     String choice_text = inputs.get(label_text);
                      
-                     Component[] comps = panel.getComponents();
-                     
-                     String label_text = "";
-                     String choice_text = "";
-                     
-                     for (int i = 0; i < comps.length; i++) {
-                        if (comps[i] instanceof JLabel) {
-                           JLabel the_label = (JLabel) comps[i];
-                           label_text = the_label.getText();
-                        }
-                     }
-                     
-                     for (int i = 0; i < comps.length; i++) {
-                        if (comps[i] instanceof JTextField) {
-                           JTextField the_tf = (JTextField) comps[i];
-                           choice_text = the_tf.getText();
-                           
-                           if (!choice_text.isEmpty()) {
-                              double entered_number = Double.parseDouble(choice_text);
-                              bounds = constraints.get(label_text);
-                              if (entered_number < bounds[0]) {
-                                 entered_number = bounds[0];
-                              }
-                              else if (entered_number > bounds[1]) {
-                                 entered_number = bounds[1];
-                              }
-                              the_tf.setText(Double.toString(entered_number));
-                              choice_text = the_tf.getText();
-                           }
-                        }
-                        else if (comps[i] instanceof JComboBox) {
-                           JComboBox the_cb = (JComboBox) comps[i];
-                           Vector<String> drop_options = drop_lists.get(label_text);
-                           choice_text = drop_options.get(the_cb.getSelectedIndex());
-                        }
-                     }
-                     
-                     theText += label_text;
-                     theText += ": ";
-                     theText += choice_text;
+                     theText += "\n" + label_text + ": " + choice_text;
                   }
                   
                   out.setText(theText);
@@ -179,7 +138,6 @@ public class Base_UI {
       
       //individual panels added to big parms panel as GridLayout
       parms_panel.add(model_panel);
-      
       
       for (JPanel panel : panels) {
          parms_panel.add(panel);
@@ -191,5 +149,57 @@ public class Base_UI {
       frame.getContentPane().add(BorderLayout.WEST, parms_panel);
       frame.getContentPane().add(BorderLayout.EAST, out);
       frame.setVisible(true);
+   }
+   
+   public static HashMap<String, String> getBoundedInputsFromPanelsAndConstraints(Vector<JPanel> panels, HashMap<String, double[]> constraints) {
+      HashMap<String, String> inputs = new HashMap<String, String>();
+      
+      for (JPanel panel : panels) {
+         Component[] comps = panel.getComponents();
+                     
+         String label_text = "";
+         String choice_text = "";
+                     
+         for (int i = 0; i < comps.length; i++) {
+            if (comps[i] instanceof JLabel) {
+               JLabel the_label = (JLabel) comps[i];
+               label_text = the_label.getText();
+            }
+         }
+                     
+         for (int i = 0; i < comps.length; i++) {
+            if (comps[i] instanceof JTextField) {
+               JTextField the_tf = (JTextField) comps[i];
+               choice_text = the_tf.getText();
+               
+               double[] bounds = constraints.get(label_text);
+               double entered_number;
+               
+               try {
+                  entered_number = Double.parseDouble(choice_text);
+                  if (entered_number < bounds[0]) {
+                     entered_number = bounds[0];
+                  }
+                  else if (entered_number > bounds[1]) {
+                     entered_number = bounds[1];
+                  }
+               }
+               catch (NumberFormatException e) {
+                  //not a number
+                  entered_number = bounds[0];
+               }
+               the_tf.setText(Double.toString(entered_number));
+               choice_text = the_tf.getText();
+            }
+            else if (comps[i] instanceof JComboBox) {
+               JComboBox the_cb = (JComboBox) comps[i];
+               choice_text = the_cb.getItemAt(the_cb.getSelectedIndex()).toString();
+            }
+         }
+         
+         inputs.put(label_text, choice_text);
+      }
+   
+      return inputs;
    }
 }
