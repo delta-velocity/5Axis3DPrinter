@@ -34,6 +34,9 @@ public class Base_UI {
       //get different files in one run
       class FileHolder {
          private File the_file;
+         public FileHolder() {
+            the_file = null;
+         }
          public File getFile() {
             return the_file;
          }
@@ -120,8 +123,9 @@ public class Base_UI {
                public void actionPerformed(ActionEvent e) {
                   String theText = "Selected Parameters:\nModel: ";
                   
-                  if (chosen_model.getFile() != null) {
-                     theText += chosen_model.getFile().getAbsolutePath();
+                  File chosen_file = chosen_model.getFile();
+                  if (chosen_file != null) {
+                     theText += chosen_file.getAbsolutePath();
                   }
                   else {
                      theText += "None";
@@ -137,7 +141,9 @@ public class Base_UI {
                   
                   out.setText(theText);
                   
-                  TheWindow.display(chosen_model.getFile().toString());
+                  if (chosen_file != null) {
+                     TheWindow.display(chosen_file.getAbsolutePath());
+                  }
                }
             });
       
