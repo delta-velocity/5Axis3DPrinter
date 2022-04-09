@@ -1,5 +1,9 @@
 package engine;
 
+import imgui.ImGui;
+import imgui.flag.ImGuiConfigFlags;
+import org.lwjgl.glfw.GLFW;
+
 public class Application {
 	public static final int TARGET_FPS = 75;
 
@@ -54,6 +58,8 @@ public class Application {
 				accumulator -= interval;
 			}
 
+
+			// model render
 			render();
 
 			if (!window.isvSync()) {

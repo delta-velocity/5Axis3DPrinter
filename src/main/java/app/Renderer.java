@@ -5,18 +5,19 @@ import engine.Window;
 import engine.graph.Mesh;
 import engine.graph.ShaderProgram;
 import engine.graph.Transformation;
+import imgui.ImGui;
 import org.joml.Matrix4f;
 
-import static org.lwjgl.opengl.GL11.GL_COLOR_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT;
-import static org.lwjgl.opengl.GL11.glClear;
-import static org.lwjgl.opengl.GL11.glViewport;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL15.GL_BACK;
+import static org.lwjgl.opengl.GL15.GL_CULL_FACE;
+import static org.lwjgl.opengl.GL15.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL15.glCullFace;
+import static org.lwjgl.opengl.GL15.glEnable;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.glDisableVertexAttribArray;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Renderer {
 	private static final float FOV = (float) Math.toRadians(60.0f);
@@ -61,6 +62,18 @@ public class Renderer {
 	public void render(Window window, STL[] objects) {
 		clear();
 
+		// ImGui stuff
+		window.imGuiGlfw.newFrame();
+		ImGui.newFrame();
+		ImGui.begin("test");
+
+		ImGui.text("Hello, World!");
+
+		ImGui.end();
+		ImGui.render();
+		window.imGuiGl3.renderDrawData(ImGui.getDrawData());
+
+		// not ImGui stuff
 		if (window.isResized()) {
 			glViewport(0, 0, window.getWidth(), window.getHeight());
 			window.setResized(false);
@@ -86,6 +99,18 @@ public class Renderer {
 		}
 
 		shader.unbind();
+
+		// ImGui cleanup
+
+//		if (ImGui.getIO().hasConfigFlags(ImGuiConfigFlags.ViewportsEnable)) {
+//			final long backupWindowHandle = org.lwjgl.glfw.GLFW.glfwGetCurrentContext();
+//			ImGui.updatePlatformWindows();
+//			ImGui.renderPlatformWindowsDefault();
+//			GLFW.glfwMakeContextCurrent(backupWindowHandle);
+//		}
+//
+//		GLFW.glfwSwapBuffers(window.windowHandle);
+//		GLFW.glfwPollEvents();
 	}
 
 	public void cleanup() {

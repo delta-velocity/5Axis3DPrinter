@@ -1,21 +1,27 @@
 package engine;
 
-import static org.lwjgl.glfw.GLFW.*;
+import imgui.ImGui;
+import imgui.gl3.ImGuiImplGl3;
+import imgui.glfw.ImGuiImplGlfw;
+import org.lwjgl.glfw.Callbacks;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.opengl.GL;
-import static org.lwjgl.opengl.GL11.GL_FALSE;
-import static org.lwjgl.opengl.GL11.GL_TRUE;
-import static org.lwjgl.opengl.GL11.glClearColor;
+
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class Window {
 	private final String title;
 	private int width;
 	private int height;
-	private long windowHandle;
+	public long windowHandle;
 	private boolean resized;
 	private boolean vSync;
+	public final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+	public final ImGuiImplGlfw imGuiGlfw = new ImGuiImplGlfw();
+	private String glslVersion = null;
 
 	public Window(String title, int width, int height, boolean vSync) {
 		this.title = title;
@@ -25,7 +31,7 @@ public class Window {
 		this.resized = false;
 	}
 
-	public void init() {
+	public void initWindow() {
 		// Setup an error callback. The default implementation
 		// will print the error message in System.err.
 		GLFWErrorCallback.createPrint(System.err).set();
@@ -35,11 +41,13 @@ public class Window {
 			throw new IllegalStateException("Unable to initialize GLFW");
 		}
 
+		glslVersion = "#version 330";
+
 		glfwDefaultWindowHints(); // optional, the current window hints are already the default
 		glfwWindowHint(GLFW_VISIBLE, GL_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GL_TRUE); // the window will be resizable
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
@@ -87,6 +95,19 @@ public class Window {
 
 		// Set the clear color
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+		// ImGui stuff
+	}
+
+	public void initGui() {
+		ImGui.createContext();
+	}
+
+	public void init() {
+		initWindow();
+		initGui();
+		imGuiGlfw.init(windowHandle, true);
+		imGuiGl3.init(glslVersion);
 	}
 
 	public void setClearColor(float r, float g, float b, float alpha) {
@@ -132,5 +153,14 @@ public class Window {
 	public void update() {
 		glfwSwapBuffers(windowHandle);
 		glfwPollEvents();
+	}
+
+	public void destroy() {
+		imGuiGl3.dispose();
+		imGuiGlfw.dispose();
+		ImGui.destroyContext();
+		Callbacks.glfwFreeCallbacks(windowHandle);
+		glfwDestroyWindow(windowHandle);
+		glfwTerminate();
 	}
 }

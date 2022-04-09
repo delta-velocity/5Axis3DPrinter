@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class STL {
-	public static final Vector3f LIGHTING_ANGLE = new Vector3f(0, 1, 12);
+	public static final Vector3f LIGHTING_ANGLE = new Vector3f(1, 1, 1);
 
 
 	private List<Mesh> meshes;
@@ -58,7 +58,7 @@ public class STL {
 					solids.add(new Solid());
 					//System.out.println("Solid " + solids.size());
 				} else if (s[0].equals("facet")) {
-					normal = new Vector3f(Float.parseFloat(s[2]), -Float.parseFloat(s[3]), -Float.parseFloat(s[4]));
+					normal = new Vector3f(Float.parseFloat(s[2]), Float.parseFloat(s[3]), Float.parseFloat(s[4]));
 					r.readLine();
 					s = r.readLine().split("\\s+");
 					p1 = new Vector3f(Float.parseFloat(s[2]), Float.parseFloat(s[3]), Float.parseFloat(s[4]));

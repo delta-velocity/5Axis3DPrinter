@@ -1,0 +1,21 @@
+Nozzle Temperature
+Number
+0
+50
+Print Surface Temperature
+Number
+10
+60
+Print Speed
+Number
+1
+10
+Infill Pattern
+List
+Cross Lattice
+Square Lattice
+#
+Infill Density
+Number
+0
+100

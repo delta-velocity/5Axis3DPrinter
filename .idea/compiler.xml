@@ -9,8 +9,5 @@
         <module name="5axis3dprinter" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="5axis3dprinter" target="16" />
-    </bytecodeTargetLevel>
   </component>
 </project>
