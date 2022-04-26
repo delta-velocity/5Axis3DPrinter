@@ -1,6 +1,7 @@
 package app;
 
 import engine.STL;
+import engine.UI;
 import engine.Window;
 import engine.graph.Mesh;
 import engine.graph.ShaderProgram;
@@ -30,7 +31,7 @@ public class Renderer {
 	private ShaderProgram shader;
 	private Matrix4f projectionMatrix;
 	private Window window;
-	private Transformation transformation;
+	public Transformation transformation;
 
 	public Renderer() {
 		transformation = new Transformation();
@@ -53,6 +54,7 @@ public class Renderer {
 		shader.createUniform("worldMatrix");
 
 		window.setClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		UI.ui.setRenderer(this);
 	}
 
 	public void clear() {
@@ -63,15 +65,13 @@ public class Renderer {
 		clear();
 
 		// ImGui stuff
+		UI.ui.setModels(objects);
 		window.imGuiGlfw.newFrame();
 		ImGui.newFrame();
-		ImGui.begin("test");
 
-		ImGui.text("Hello, World!");
+		UI.ui.draw();
 
-		ImGui.end();
 		ImGui.render();
-		window.imGuiGl3.renderDrawData(ImGui.getDrawData());
 
 		// not ImGui stuff
 		if (window.isResized()) {
@@ -85,19 +85,20 @@ public class Renderer {
 		shader.setUniform("projectionMatrix", projectionMatrix);
 
 		for (STL s : objects) {
-			// Set world matrix for this item
+			// Set world matrix for this object
 			Matrix4f worldMatrix =
 					transformation.getWorldMatrix(
 							s.getPosition(),
 							s.getRotation(),
 							s.getScale());
 			shader.setUniform("worldMatrix", worldMatrix);
-			// Render the mes for this game item
+			// Render the object
 			for (Mesh m : s.getMeshes()) {
 				m.render();
 			}
 		}
 
+		window.imGuiGl3.renderDrawData(ImGui.getDrawData());
 		shader.unbind();
 
 		// ImGui cleanup

@@ -1,0 +1,64 @@
+{
+  "temperature": {
+    "display": "Temperature Settings",
+    "nozzle": {
+      "id": "nozzleTemp",
+      "display": "Nozzle Temperature",
+      "min": 190,
+      "max": 270,
+      "tags": {
+        "int":  true,
+        "validate": true
+      }
+    },
+    "surface": {
+      "id": "surfaceTemp",
+      "display": "Surface Temperature",
+      "min": 80,
+      "max": 110,
+      "tags": {
+        "int":  true,
+        "validate": true
+      }
+    }
+  },
+  "speed": {
+    "display": "Speed Settings",
+    "travel": {
+      "id": "travelSpeed",
+      "display": "Travel Speed",
+      "min": 1,
+      "max": 3,
+      "tags": {
+        "int":  true,
+        "validate": true
+      }
+    }
+  },
+  "infill": {
+    "display": "Infill Settings",
+    "pattern": {
+      "id": "infillPattern",
+      "display": "Infill Pattern",
+      "list": [
+        "octal",
+        "gyroid",
+        "square",
+        "cross"
+      ],
+      "tags": {
+        "list": true
+      }
+    },
+    "density": {
+      "id": "infillDensity",
+      "display": "Infill Density",
+      "min": 0,
+      "max": 100,
+      "tags": {
+        "int":  true,
+        "validate": true
+      }
+    }
+  }
+}

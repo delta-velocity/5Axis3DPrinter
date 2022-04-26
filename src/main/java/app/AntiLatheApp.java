@@ -1,8 +1,10 @@
 package app;
 
 import engine.ApplicationInterface;
+import engine.Parameters;
 import engine.STL;
 import engine.Window;
+import engine.UI;
 import org.joml.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
@@ -10,6 +12,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 import static org.lwjgl.opengl.GL11.glViewport;
 
 public class AntiLatheApp implements ApplicationInterface {
+	private static final String configPath = "resources/config.json";
+	public static Parameters PPARAMS;
 
 	private int direction = 0;
 
@@ -24,10 +28,14 @@ public class AntiLatheApp implements ApplicationInterface {
 
 	@Override
 	public void init(Window window) throws Exception {
+		PPARAMS = new Parameters(configPath);
+		UI.ui.useConfig(PPARAMS);
+
 		renderer.init(window);
 
 		testMesh = new STL("C:\\Users\\Delta\\Documents\\5Axis3DPrinter\\GoPro_-_Gerade.stl");
 		testMesh.setPosition(0, 0, -300);
+		testMesh.recenter(new Vector3f(-100, 100, 100));
 		testMesh.setRotation(-45, 0, 45);
 	}
 
@@ -56,7 +64,6 @@ public class AntiLatheApp implements ApplicationInterface {
 		window.setClearColor(color, color, color, 0.0f);
 		renderer.clear();
 		Vector3f v = testMesh.getRotation();
-		v.x = v.x + 0.5f;
 		testMesh.setRotation(v.x, v.y, v.z);
 
 		renderer.render(window, new STL[]{testMesh});
@@ -64,10 +71,6 @@ public class AntiLatheApp implements ApplicationInterface {
 
 	@Override
 	public void cleanup() {
-
-	}
-
-	public void cursorPositionCallBack(Window window, double x, double y) {
 
 	}
 }

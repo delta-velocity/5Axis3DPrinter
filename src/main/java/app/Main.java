@@ -9,7 +9,7 @@ public class Main {
 		try {
 			boolean vSync = true;
 			ApplicationInterface logic = new AntiLatheApp();
-			Application app = new Application("app", 600, 480, vSync, logic);
+			Application app = new Application("AntiLathe", 600, 480, vSync, logic);
 			app.run();
 		} catch (Exception excp) {
 			excp.printStackTrace();

@@ -6,10 +6,7 @@ import org.joml.Vector3f;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class STL {
 	public static final Vector3f LIGHTING_ANGLE = new Vector3f(1, 1, 1);
@@ -132,6 +129,17 @@ public class STL {
 
 	public List<Mesh> getMeshes() {
 		return meshes;
+	}
+
+	public void recenter(Vector3f v) {
+		for (Solid s : solids) {
+			for (Face f : s.faces) {
+				f.p1.add(v);
+				f.p2.add(v);
+				f.p3.add(v);
+			}
+		}
+		translate(v.x, v.y, v.z);
 	}
 
 	// a single solid part of an STL file
